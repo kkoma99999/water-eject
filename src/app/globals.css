@@ -1,26 +1,95 @@
 @import "tailwindcss";
 
-:root {
-  --background: #ffffff;
-  --foreground: #171717;
+@theme {
+  --color-bg: #0b1220;
+  --color-surface: #111a2e;
+  --color-surface-2: #182441;
+  --color-accent: #38bdf8;
+  --color-accent-strong: #0ea5e9;
+  --color-text: #e2e8f0;
+  --color-muted: #94a3b8;
+  --font-sans: var(--font-sans-inter);
 }
 
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
-}
-
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+html,
+body {
+  background: var(--color-bg);
+  color: var(--color-text);
 }
 
 body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  font-family: var(--font-sans), ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto,
+    "Helvetica Neue", Arial, sans-serif;
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}
+
+::selection {
+  background: var(--color-accent);
+  color: var(--color-bg);
+}
+
+.prose-water {
+  font-size: 1.0625rem;
+  line-height: 1.75;
+  color: var(--color-text);
+}
+.prose-water > * + * {
+  margin-top: 1.25em;
+}
+.prose-water h2 {
+  font-size: 1.5rem;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+  margin-top: 2.25em;
+  color: var(--color-text);
+}
+.prose-water h3 {
+  font-size: 1.2rem;
+  font-weight: 600;
+  margin-top: 2em;
+  color: var(--color-text);
+}
+.prose-water p {
+  color: var(--color-text);
+}
+.prose-water a {
+  color: var(--color-accent);
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+.prose-water a:hover {
+  color: var(--color-accent-strong);
+}
+.prose-water strong {
+  color: var(--color-text);
+  font-weight: 600;
+}
+.prose-water ul,
+.prose-water ol {
+  padding-left: 1.5rem;
+}
+.prose-water ul {
+  list-style: disc;
+}
+.prose-water ol {
+  list-style: decimal;
+}
+.prose-water li::marker {
+  color: var(--color-muted);
+}
+.prose-water li + li {
+  margin-top: 0.5em;
+}
+.prose-water code {
+  background: var(--color-surface-2);
+  padding: 0.15em 0.4em;
+  border-radius: 0.25rem;
+  font-size: 0.9em;
+}
+.prose-water blockquote {
+  border-left: 3px solid var(--color-accent);
+  padding-left: 1rem;
+  color: var(--color-muted);
+  font-style: italic;
 }

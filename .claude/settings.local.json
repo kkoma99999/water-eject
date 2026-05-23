@@ -1,8 +1,0 @@
-{
-  "permissions": {
-    "allow": [
-      "Read(//f/Programming/**)",
-      "Bash(npx --yes create-next-app@latest water --typescript --tailwind --app --eslint --src-dir --import-alias \"@/*\" --use-npm --turbopack --yes)"
-    ]
-  }
-}
