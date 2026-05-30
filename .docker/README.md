@@ -6,14 +6,14 @@ with only this project's directory mounted in.
 ## Build once
 
 ```powershell
-docker build -t claude-sandbox F:\Programming\Water\.docker
+docker build -t claude-sandbox D:\Water\water-eject\.docker
 ```
 
 ## Run
 
 ```powershell
 docker run -it --rm `
-  -v "F:\Programming\Water:/workspace" `
+  -v "D:\Water\water-eject:/workspace" `
   -v claude-config:/home/node/.claude `
   claude-sandbox
 ```

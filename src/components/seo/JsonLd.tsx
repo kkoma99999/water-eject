@@ -8,7 +8,7 @@ interface JsonLdProps {
 // they crash inline scripts.
 const UNSAFE_CODES = new Set([0x3c, 0x3e, 0x26, 0x2028, 0x2029]);
 
-function safeStringify(data: object): string {
+export function safeStringify(data: object): string {
   const json = JSON.stringify(data);
   let out = "";
   for (const ch of json) {

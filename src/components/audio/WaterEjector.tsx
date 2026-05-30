@@ -1,5 +1,6 @@
 "use client";
 
+import { useRef, type KeyboardEvent } from "react";
 import { useWaterEjector } from "./useWaterEjector";
 import type { FrequencyPreset } from "@/lib/audio/engine";
 import { Square } from "lucide-react";
@@ -12,8 +13,8 @@ const FREQUENCY_OPTIONS: { value: FrequencyPreset; label: string; hint: string }
 ];
 
 const DURATION_OPTIONS: { value: number; label: string }[] = [
-  { value: 600, label: "10m" },
-  { value: 1800, label: "30m" },
+  { value: 30, label: "30s" },
+  { value: 60, label: "60s" },
   { value: Infinity, label: "Loop ∞" },
 ];
 
@@ -24,12 +25,48 @@ export function WaterEjector() {
   const isInfinite = !Number.isFinite(ej.durationSeconds);
   const showSpinner = isInfinite && isPlaying;
 
+  // Roving-tabindex + arrow-key navigation for the two ARIA radiogroups below,
+  // per the WAI-ARIA radio group pattern (Tab enters the group once; arrows,
+  // Home and End move and select within it).
+  const freqRefs = useRef<(HTMLButtonElement | null)[]>([]);
+  const durRefs = useRef<(HTMLButtonElement | null)[]>([]);
+  const moveRadio = <T,>(
+    e: KeyboardEvent<HTMLButtonElement>,
+    index: number,
+    values: T[],
+    select: (v: T) => void,
+    refs: (HTMLButtonElement | null)[],
+  ) => {
+    let next = index;
+    switch (e.key) {
+      case "ArrowRight":
+      case "ArrowDown":
+        next = (index + 1) % values.length;
+        break;
+      case "ArrowLeft":
+      case "ArrowUp":
+        next = (index - 1 + values.length) % values.length;
+        break;
+      case "Home":
+        next = 0;
+        break;
+      case "End":
+        next = values.length - 1;
+        break;
+      default:
+        return;
+    }
+    e.preventDefault();
+    select(values[next]);
+    refs[next]?.focus();
+  };
+
   const onPrimaryPress = () => {
     if (isPlaying) {
       ej.stop();
-    } else if (isDone) {
-      ej.reset();
     } else {
+      // From idle OR done: start() resets progress and clears errors, so a
+      // single tap replays instead of the old reset-then-tap-again flow.
       void ej.start();
     }
   };
@@ -66,15 +103,28 @@ export function WaterEjector() {
       >
         <legend className="mb-2 text-sm font-medium text-muted">Frequency</legend>
         <div className="grid grid-cols-3 gap-2" role="radiogroup">
-          {FREQUENCY_OPTIONS.map((opt) => {
+          {FREQUENCY_OPTIONS.map((opt, i) => {
             const active = ej.preset === opt.value;
             return (
               <button
                 key={opt.value}
+                ref={(el) => {
+                  freqRefs.current[i] = el;
+                }}
                 type="button"
                 role="radio"
                 aria-checked={active}
+                tabIndex={active ? 0 : -1}
                 onClick={() => ej.setPreset(opt.value)}
+                onKeyDown={(e) =>
+                  moveRadio(
+                    e,
+                    i,
+                    FREQUENCY_OPTIONS.map((o) => o.value),
+                    ej.setPreset,
+                    freqRefs.current,
+                  )
+                }
                 className={clsx(
                   "flex min-h-12 flex-col items-center justify-center rounded-lg border px-3 py-2 text-sm transition",
                   active
@@ -98,15 +148,28 @@ export function WaterEjector() {
       >
         <legend className="mb-2 text-sm font-medium text-muted">Duration</legend>
         <div className="grid grid-cols-3 gap-2" role="radiogroup">
-          {DURATION_OPTIONS.map((opt) => {
+          {DURATION_OPTIONS.map((opt, i) => {
             const active = ej.durationSeconds === opt.value;
             return (
               <button
                 key={opt.value}
+                ref={(el) => {
+                  durRefs.current[i] = el;
+                }}
                 type="button"
                 role="radio"
                 aria-checked={active}
+                tabIndex={active ? 0 : -1}
                 onClick={() => ej.setDurationSeconds(opt.value)}
+                onKeyDown={(e) =>
+                  moveRadio(
+                    e,
+                    i,
+                    DURATION_OPTIONS.map((o) => o.value),
+                    ej.setDurationSeconds,
+                    durRefs.current,
+                  )
+                }
                 className={clsx(
                   "flex min-h-12 items-center justify-center rounded-lg border px-3 py-2 text-sm font-medium transition",
                   active
@@ -211,7 +274,7 @@ export function WaterEjector() {
       {isDone && (
         <button
           type="button"
-          onClick={ej.reset}
+          onClick={() => void ej.start()}
           className="text-sm font-medium text-accent underline-offset-4 hover:underline"
         >
           Run again

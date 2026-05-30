@@ -27,7 +27,7 @@ export function useWaterEjector(): UseWaterEjectorResult {
   const [status, setStatus] = useState<EjectionStatus>("idle");
   const [progress, setProgress] = useState(0);
   const [preset, setPreset] = useState<FrequencyPreset>("165");
-  const [durationSeconds, setDurationSeconds] = useState(600);
+  const [durationSeconds, setDurationSeconds] = useState(30);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
@@ -68,6 +68,8 @@ export function useWaterEjector(): UseWaterEjectorResult {
   }, []);
 
   const reset = useCallback(() => {
+    // Stop first so a reset() mid-play can't orphan a running oscillator.
+    engineRef.current?.stop();
     setStatus("idle");
     setProgress(0);
   }, []);

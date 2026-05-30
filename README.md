@@ -4,7 +4,8 @@ A free web tool that plays a low-frequency tone to vibrate water out of a phone
 speaker — the same technique Apple Watch uses for Water Lock. No app, no signup,
 runs entirely in the browser via the Web Audio API.
 
-Live at: _set NEXT_PUBLIC_SITE_URL after deploy_
+Deploy target: `https://watereject.dev` — set `NEXT_PUBLIC_SITE_URL` to your own
+domain in Vercel's Environment Variables before the first deploy.
 
 ## Stack
 

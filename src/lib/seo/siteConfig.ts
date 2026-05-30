@@ -5,6 +5,16 @@
 const RAW_URL = process.env.NEXT_PUBLIC_SITE_URL ?? "http://localhost:3000";
 const SITE_URL = RAW_URL.replace(/\/$/, "");
 
+if (process.env.NODE_ENV === "production" && !process.env.NEXT_PUBLIC_SITE_URL) {
+  // Build-time guardrail. Without this set, every canonical URL, sitemap entry,
+  // robots sitemap pointer, OG URL, and JSON-LD @id falls back to localhost and
+  // the site will not be indexable. Warn loudly instead of shipping it silently.
+  console.warn(
+    "[siteConfig] NEXT_PUBLIC_SITE_URL is not set in a production build — " +
+      "all canonical/SEO URLs will fall back to http://localhost:3000.",
+  );
+}
+
 export const siteConfig = {
   name: "Water Eject",
   shortName: "Water Eject",

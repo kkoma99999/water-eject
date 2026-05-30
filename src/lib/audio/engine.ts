@@ -45,7 +45,6 @@ export class WaterEjectorEngine {
   private ctx: AudioContext | null = null;
   private oscillator: OscillatorNode | null = null;
   private gain: GainNode | null = null;
-  private endTimer: ReturnType<typeof setTimeout> | null = null;
   private progressTimer: ReturnType<typeof setInterval> | null = null;
   private sweepTimer: ReturnType<typeof setInterval> | null = null;
   private listeners: Partial<EngineEvents> = {};
@@ -67,8 +66,26 @@ export class WaterEjectorEngine {
     }
     if (!this.ctx) {
       this.ctx = createAudioContext();
+      // Recover from OS-level interruptions (iOS phone call / Siri / audio route
+      // change), which drop the context out of "running" mid-play. Attempt to
+      // resume so the tone continues once the interruption clears, on browsers
+      // that permit a non-gesture resume. (Full UI surfacing of an
+      // unrecoverable interruption is a follow-up.)
+      this.ctx.onstatechange = () => {
+        const ctx = this.ctx;
+        if (ctx && this.oscillator && ctx.state !== "running" && ctx.state !== "closed") {
+          void ctx.resume().catch(() => {
+            // Couldn't auto-recover (iOS needs a fresh user gesture): stop
+            // cleanly so the UI returns to idle instead of a silent "playing".
+            this.stop();
+          });
+        }
+      };
     }
-    if (this.ctx.state === "suspended") {
+    // iOS Safari can leave the context "suspended" or — after a phone call or
+    // Siri — "interrupted"; both need resume() from inside a user gesture.
+    // "interrupted" isn't in the TS lib types, so test against "running".
+    if (this.ctx.state !== "running") {
       await this.ctx.resume();
     }
     const ctx = this.ctx;
@@ -214,10 +231,6 @@ export class WaterEjectorEngine {
   }
 
   private clearTimers(): void {
-    if (this.endTimer) {
-      clearTimeout(this.endTimer);
-      this.endTimer = null;
-    }
     if (this.progressTimer) {
       clearInterval(this.progressTimer);
       this.progressTimer = null;
