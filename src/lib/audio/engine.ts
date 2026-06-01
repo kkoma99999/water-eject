@@ -10,6 +10,8 @@
 //   is expensive on iOS and audibly delays the first tone.
 // - Gain ramps at start/stop prevent the audible click that comes from
 //   instantly switching a sine wave on or off.
+// - A persistent AnalyserNode sits between the gain and the destination so the
+//   UI can draw a live waveform of exactly what is playing.
 
 export type FrequencyPreset = "165" | "200" | "sweep";
 
@@ -45,6 +47,9 @@ export class WaterEjectorEngine {
   private ctx: AudioContext | null = null;
   private oscillator: OscillatorNode | null = null;
   private gain: GainNode | null = null;
+  // Persistent tap for the waveform UI. Created with the context, kept wired to
+  // the destination across plays. Null until the first play.
+  private analyser: AnalyserNode | null = null;
   private progressTimer: ReturnType<typeof setInterval> | null = null;
   private sweepTimer: ReturnType<typeof setInterval> | null = null;
   private listeners: Partial<EngineEvents> = {};
@@ -59,6 +64,12 @@ export class WaterEjectorEngine {
     return this.oscillator !== null;
   }
 
+  // The visualization reads time-domain data from this. Null until the first
+  // play has created the AudioContext.
+  getAnalyser(): AnalyserNode | null {
+    return this.analyser;
+  }
+
   // Must be called from inside a user gesture (click/tap) for iOS Safari.
   async start({ preset, durationSeconds }: StartOptions): Promise<void> {
     if (this.isPlaying()) {
@@ -66,6 +77,13 @@ export class WaterEjectorEngine {
     }
     if (!this.ctx) {
       this.ctx = createAudioContext();
+      // Persistent analyser → destination. fftSize 2048 is ~43ms at 48kHz,
+      // enough to show several full cycles of a 100–200 Hz tone. No smoothing
+      // so the trace tracks the signal frame-accurately.
+      this.analyser = this.ctx.createAnalyser();
+      this.analyser.fftSize = 2048;
+      this.analyser.smoothingTimeConstant = 0;
+      this.analyser.connect(this.ctx.destination);
       // Recover from OS-level interruptions (iOS phone call / Siri / audio route
       // change), which drop the context out of "running" mid-play. Attempt to
       // resume so the tone continues once the interruption clears, on browsers
@@ -105,7 +123,8 @@ export class WaterEjectorEngine {
 
     this.scheduleFrequency(osc, preset, now, durationSeconds, isInfinite);
 
-    osc.connect(gain).connect(ctx.destination);
+    // Route through the analyser so the waveform reflects the real output.
+    osc.connect(gain).connect(this.analyser ?? ctx.destination);
     osc.start(now);
     if (!isInfinite) {
       osc.stop(now + durationSeconds);
@@ -175,6 +194,7 @@ export class WaterEjectorEngine {
       this.ctx.close().catch(() => {});
     }
     this.ctx = null;
+    this.analyser = null;
     this.listeners = {};
   }
 

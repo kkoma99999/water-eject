@@ -20,7 +20,7 @@ const HOW_TO_STEPS = [
   },
   {
     name: "Press start and wait",
-    text: "Tap the big play button and let the tone run for 15 to 60 seconds. Water beads will form on the grille — wipe them away with a soft cloth.",
+    text: "Tap the big play button and let the tone run. Most water beads out within the first minute or two; let a full cycle play if the speaker still sounds muffled. Wipe the beads off the grille with a soft cloth.",
   },
   {
     name: "Test your audio",
@@ -35,6 +35,8 @@ export const metadata: Metadata = {
   description: siteConfig.defaultDescription,
   alternates: { canonical: "/" },
   openGraph: {
+    type: "website",
+    siteName: siteConfig.name,
     title: "Water Eject — Remove Water From Your Phone Speaker",
     description: siteConfig.defaultDescription,
     url: siteConfig.url,
@@ -51,7 +53,7 @@ export default function HomePage() {
       <section className="mx-auto max-w-3xl px-4 pb-12 pt-4">
         <div className="rounded-2xl border border-white/5 bg-surface p-6 sm:p-8">
           <h2 className="text-2xl font-semibold tracking-tight">
-            Phone got wet? Blow it out in 30 seconds 💨
+            Phone got wet? Blow the water out in minutes 💨
           </h2>
           <p className="mt-3 text-muted">
             Skip the rice, skip the hairdryer. This free tool plays the same kind of low-frequency

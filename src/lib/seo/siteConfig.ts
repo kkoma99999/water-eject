@@ -5,14 +5,45 @@
 const RAW_URL = process.env.NEXT_PUBLIC_SITE_URL ?? "http://localhost:3000";
 const SITE_URL = RAW_URL.replace(/\/$/, "");
 
-if (process.env.NODE_ENV === "production" && !process.env.NEXT_PUBLIC_SITE_URL) {
-  // Build-time guardrail. Without this set, every canonical URL, sitemap entry,
-  // robots sitemap pointer, OG URL, and JSON-LD @id falls back to localhost and
-  // the site will not be indexable. Warn loudly instead of shipping it silently.
-  console.warn(
-    "[siteConfig] NEXT_PUBLIC_SITE_URL is not set in a production build — " +
-      "all canonical/SEO URLs will fall back to http://localhost:3000.",
-  );
+if (process.env.NODE_ENV === "production") {
+  // Fail-closed build guardrail. NEXT_PUBLIC_* values are inlined at BUILD time,
+  // so a missing/loopback/non-https value here ships canonical/sitemap/robots/OG/
+  // JSON-LD URLs that de-index the whole site. A hard build error is far safer
+  // than shipping a non-indexable deploy. We reject every realistic misconfig
+  // (unset, empty, invalid, http/non-https, and loopback hosts) with a message
+  // that points at the cause — not a cryptic "Invalid URL" deep in the build.
+  let reason = "";
+  if (!process.env.NEXT_PUBLIC_SITE_URL || SITE_URL === "") {
+    reason = "it is unset or empty";
+  } else {
+    let host = "";
+    try {
+      host = new URL(SITE_URL).hostname;
+    } catch {
+      reason = `it is not a valid URL ("${SITE_URL}")`;
+    }
+    if (!reason && !SITE_URL.startsWith("https://")) {
+      reason = `it must use https (got "${SITE_URL}")`;
+    }
+    if (
+      !reason &&
+      (host === "localhost" ||
+        host.endsWith(".localhost") ||
+        host === "127.0.0.1" ||
+        host === "0.0.0.0")
+    ) {
+      reason = `it points at a loopback host ("${host}")`;
+    }
+  }
+  if (reason) {
+    throw new Error(
+      `[siteConfig] NEXT_PUBLIC_SITE_URL must be your production https domain ` +
+        `(e.g. https://watereject.dev) for a production build — ${reason}. Every ` +
+        `canonical/SEO URL derives from it, so a wrong value ships a non-indexable ` +
+        `site. Set it in your host's build environment (Vercel → Settings → ` +
+        `Environment Variables) or in .env.local for local production builds.`,
+    );
+  }
 }
 
 export const siteConfig = {

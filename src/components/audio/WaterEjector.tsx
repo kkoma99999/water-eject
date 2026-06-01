@@ -2,6 +2,8 @@
 
 import { useRef, type KeyboardEvent } from "react";
 import { useWaterEjector } from "./useWaterEjector";
+import { Waveform } from "./Waveform";
+import { useWakeLock } from "./useWakeLock";
 import type { FrequencyPreset } from "@/lib/audio/engine";
 import { Square } from "lucide-react";
 import clsx from "clsx";
@@ -13,8 +15,8 @@ const FREQUENCY_OPTIONS: { value: FrequencyPreset; label: string; hint: string }
 ];
 
 const DURATION_OPTIONS: { value: number; label: string }[] = [
-  { value: 30, label: "30s" },
-  { value: 60, label: "60s" },
+  { value: 600, label: "10 min" },
+  { value: 1200, label: "20 min" },
   { value: Infinity, label: "Loop ∞" },
 ];
 
@@ -24,6 +26,10 @@ export function WaterEjector() {
   const isDone = ej.status === "done";
   const isInfinite = !Number.isFinite(ej.durationSeconds);
   const showSpinner = isInfinite && isPlaying;
+
+  // Keep the screen awake during playback so the OS doesn't suspend the
+  // AudioContext mid-tone — the most common way this tool fails on phones.
+  useWakeLock(isPlaying);
 
   // Roving-tabindex + arrow-key navigation for the two ARIA radiogroups below,
   // per the WAI-ARIA radio group pattern (Tab enters the group once; arrows,
@@ -62,6 +68,10 @@ export function WaterEjector() {
   };
 
   const onPrimaryPress = () => {
+    // Subtle haptic tick on tap (Android; a silent no-op on iOS).
+    if (typeof navigator !== "undefined" && "vibrate" in navigator) {
+      navigator.vibrate(isPlaying ? 10 : 18);
+    }
     if (isPlaying) {
       ej.stop();
     } else {
@@ -77,6 +87,9 @@ export function WaterEjector() {
   const radius = (size - stroke) / 2;
   const circumference = 2 * Math.PI * radius;
   const dashOffset = circumference * (1 - ej.progress);
+  // Screen-reader progress, bucketed to 0/25/50/75 so the polite live region
+  // announces ~4 times per session instead of on every percent tick.
+  const announcedPct = isInfinite ? 0 : Math.floor(ej.progress * 4) * 25;
 
   return (
     <section
@@ -185,6 +198,11 @@ export function WaterEjector() {
         </div>
       </fieldset>
 
+      <div className="w-full">
+        <span className="mb-2 block text-sm font-medium text-muted">Waveform</span>
+        <Waveform getAnalyser={ej.getAnalyser} active={isPlaying} preset={ej.preset} />
+      </div>
+
       <div className="relative flex items-center justify-center" style={{ width: size, height: size }}>
         <svg
           width={size}
@@ -226,7 +244,7 @@ export function WaterEjector() {
           onClick={onPrimaryPress}
           aria-pressed={isPlaying}
           className={clsx(
-            "relative z-10 flex h-32 w-32 flex-col items-center justify-center rounded-full text-text shadow-lg transition",
+            "relative z-10 flex h-32 w-32 flex-col items-center justify-center rounded-full shadow-lg transition",
             "focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-accent/50",
             isPlaying
               ? "bg-accent text-bg"
@@ -265,7 +283,12 @@ export function WaterEjector() {
         {isPlaying
           ? isInfinite
             ? "Playing tone in loop mode. Press stop to end."
-            : `Playing tone. ${Math.round(ej.progress * 100)} percent complete.`
+            : // Announce only at quarter milestones (the visible ring still moves
+              // smoothly). Otherwise a screen reader re-reads the percentage on
+              // every change — ~100 interruptions over a 10–20 min session.
+              announcedPct === 0
+              ? "Playing tone."
+              : `Playing tone, ${announcedPct} percent complete.`
           : isDone
             ? "Water ejection complete. Tap to run again."
             : "Idle. Press start to begin."}

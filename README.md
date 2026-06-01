@@ -12,7 +12,7 @@ domain in Vercel's Environment Variables before the first deploy.
 - Next.js 16 (App Router) + React 19
 - TypeScript, strict mode
 - Tailwind CSS v4
-- MDX blog via `next-mdx-remote` + `gray-matter`
+- MDX blog via `next-mdx-remote-client` + `gray-matter`
 - Web Audio API (no audio assets — tones are synthesised live)
 
 ## Local development

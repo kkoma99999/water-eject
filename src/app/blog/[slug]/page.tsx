@@ -26,6 +26,7 @@ export async function generateMetadata({ params }: RouteParams): Promise<Metadat
     alternates: { canonical: `/blog/${post.slug}` },
     openGraph: {
       type: "article",
+      siteName: siteConfig.name,
       title: post.title,
       description: post.description,
       url,

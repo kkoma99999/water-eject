@@ -16,7 +16,7 @@ export function buildHowToSchema(steps: HowToStep[]) {
     name: "How to eject water from a phone speaker",
     description:
       "Use a low-frequency tone to vibrate water out of your phone speaker. Works on iPhone and Android.",
-    totalTime: "PT1M",
+    totalTime: "PT2M",
     supply: [],
     tool: [{ "@type": "HowToTool", name: "A phone with a wet speaker" }],
     step: steps.map((s, i) => ({

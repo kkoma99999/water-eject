@@ -9,6 +9,8 @@ export const metadata: Metadata = {
     "Articles about phone speakers, water damage recovery, and troubleshooting muffled audio.",
   alternates: { canonical: "/blog" },
   openGraph: {
+    type: "website",
+    siteName: siteConfig.name,
     title: `Blog | ${siteConfig.name}`,
     description:
       "Articles about phone speakers, water damage recovery, and troubleshooting muffled audio.",

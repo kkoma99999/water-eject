@@ -8,6 +8,8 @@ export const metadata: Metadata = {
     "The science behind using a low-frequency tone to remove water from a phone speaker — what 165 Hz actually does, and why it's safe.",
   alternates: { canonical: "/how-it-works" },
   openGraph: {
+    type: "website",
+    siteName: siteConfig.name,
     title: "How Does Water Ejection Work?",
     description:
       "The science behind using a low-frequency tone to remove water from a phone speaker.",

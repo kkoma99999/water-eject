@@ -2,7 +2,7 @@ import Link from "next/link";
 
 export function Header() {
   return (
-    <header className="sticky top-0 z-40 border-b border-white/5 bg-bg/80 backdrop-blur">
+    <header className="sticky top-0 z-40 border-b border-white/5 bg-bg/80 pt-[env(safe-area-inset-top)] backdrop-blur">
       <div className="mx-auto flex h-14 max-w-5xl items-center justify-between px-4">
         <Link
           href="/"
@@ -10,14 +10,17 @@ export function Header() {
           aria-label="Water Eject — Home"
         >
           <span className="text-xl leading-none" aria-hidden="true">🔊</span>
-          <span>Water Eject</span>
+          {/* Hide the wordmark below 360px so the logo + 3 nav links never
+              overflow the narrowest phones; the link's aria-label keeps the
+              brand name available to screen readers. */}
+          <span className="hidden min-[360px]:inline">Water Eject</span>
         </Link>
         <nav aria-label="Primary">
           <ul className="flex items-center gap-1 text-sm">
             <li>
               <Link
                 href="/how-it-works"
-                className="rounded-md px-3 py-2 text-muted hover:text-text"
+                className="inline-flex min-h-11 items-center rounded-md px-2.5 text-muted hover:text-text sm:px-3"
               >
                 How it works
               </Link>
@@ -25,7 +28,7 @@ export function Header() {
             <li>
               <Link
                 href="/faq"
-                className="rounded-md px-3 py-2 text-muted hover:text-text"
+                className="inline-flex min-h-11 items-center rounded-md px-2.5 text-muted hover:text-text sm:px-3"
               >
                 FAQ
               </Link>
@@ -33,7 +36,7 @@ export function Header() {
             <li>
               <Link
                 href="/blog"
-                className="rounded-md px-3 py-2 text-muted hover:text-text"
+                className="inline-flex min-h-11 items-center rounded-md px-2.5 text-muted hover:text-text sm:px-3"
               >
                 Blog
               </Link>

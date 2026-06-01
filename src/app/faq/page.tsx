@@ -12,7 +12,7 @@ const FAQ_ITEMS = [
   {
     question: "How long should I run the tone for?",
     answer:
-      "Most water clears within 15 to 30 seconds. If the speaker still sounds muffled after one cycle, try the 60-second duration or the sweep mode, which varies the frequency to better match your speaker's natural resonance.",
+      "Most water beads out within the first minute or two. Letting a full 10-minute cycle play won't hurt the speaker, so you can leave it running hands-free. If it still sounds muffled after a cycle, switch to the 20-minute or Loop setting, or try the sweep mode, which varies the frequency to better match your speaker's natural resonance.",
   },
   {
     question: "Does this work on iPhone?",
@@ -62,6 +62,8 @@ export const metadata: Metadata = {
     "Common questions about ejecting water from phone speakers — safety, frequency, iPhone vs Android, and what to do if the tone doesn't work.",
   alternates: { canonical: "/faq" },
   openGraph: {
+    type: "website",
+    siteName: siteConfig.name,
     title: "Water Eject FAQ",
     description: "Common questions about ejecting water from phone speakers.",
     url: `${siteConfig.url}/faq`,

@@ -34,14 +34,22 @@ export const metadata: Metadata = {
   },
   twitter: {
     card: "summary_large_image",
-    title: siteConfig.defaultTitle,
-    description: siteConfig.defaultDescription,
+    // No title/description here: Next derives them from each route's own
+    // title/description, so /faq, /how-it-works and /blog get their real titles
+    // instead of inheriting the homepage's via shallow metadata merge.
+    site: siteConfig.twitterHandle,
+    creator: siteConfig.twitterHandle,
     images: [siteConfig.ogImagePath],
   },
   robots: {
     index: true,
     follow: true,
     googleBot: { index: true, follow: true, "max-image-preview": "large" },
+  },
+  appleWebApp: {
+    capable: true,
+    title: siteConfig.shortName,
+    statusBarStyle: "black-translucent",
   },
 };
 
@@ -50,6 +58,8 @@ export const viewport: Viewport = {
   colorScheme: "dark",
   width: "device-width",
   initialScale: 1,
+  // Draw under the notch/home-indicator; safe-area insets reclaim the space.
+  viewportFit: "cover",
 };
 
 export default function RootLayout({

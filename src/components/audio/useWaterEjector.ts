@@ -20,6 +20,8 @@ export interface UseWaterEjectorResult {
   stop: () => void;
   reset: () => void;
   error: string | null;
+  // Returns the live AnalyserNode for the waveform, or null before first play.
+  getAnalyser: () => AnalyserNode | null;
 }
 
 export function useWaterEjector(): UseWaterEjectorResult {
@@ -27,7 +29,7 @@ export function useWaterEjector(): UseWaterEjectorResult {
   const [status, setStatus] = useState<EjectionStatus>("idle");
   const [progress, setProgress] = useState(0);
   const [preset, setPreset] = useState<FrequencyPreset>("165");
-  const [durationSeconds, setDurationSeconds] = useState(30);
+  const [durationSeconds, setDurationSeconds] = useState(600);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
@@ -74,6 +76,8 @@ export function useWaterEjector(): UseWaterEjectorResult {
     setProgress(0);
   }, []);
 
+  const getAnalyser = useCallback(() => engineRef.current?.getAnalyser() ?? null, []);
+
   return {
     status,
     progress,
@@ -85,5 +89,6 @@ export function useWaterEjector(): UseWaterEjectorResult {
     stop,
     reset,
     error,
+    getAnalyser,
   };
 }
